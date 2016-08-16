@@ -1,0 +1,58 @@
+Data types:
+sec = 0|1|2| ... |58|59
+min = 0|1|2| ... |58|59
+hour = 0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23
+day = 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31
+month = "JAN"|"FEB"|"MAR"|"APR"|"MAY"|"JUN"|"JUL"|"AUG"|"SEP"|"OCT"|"NOV"|"DEC"
+year = 1900|1901| ...
+GMT =  "GMT"
+weekday = "SUN"|"MON"|"TUE"|"WED"|"THU"|"FRI"|"SAT"
+pattern = glob pattern(* for any string, ? for any character, \ for escaping)
+
+Functions:
+void alert(message) // Possible but not recommended
+boolean dateRange(int day)
+boolean dateRange(String month)
+boolean dateRange(Int year)
+boolean dateRange(int day, String GMT)
+boolean dateRange(String month, String GMT)
+boolean dateRange(Int year, String GMT)
+boolean dateRange(int day, int day)
+boolean dateRange(int day, String month)
+boolean dateRange(String month1, String month2)
+boolean dateRange(String month, Int year)
+boolean dateRange(Int year1, Int year2)
+boolean dateRange(int day1, int day2, String GMT)
+boolean dateRange(int day, String month, String GMT)
+boolean dateRange(String month1, String month2, String GMT)
+boolean dateRange(String month, Int year, String GMT)
+boolean dateRange(Int year1, Int year2, String GMT)
+boolean dateRange(int day, String month, Int year)
+boolean dateRange(int day, String month, Int year, String GMT)
+boolean dateRange(int day1, String month1, int day2, String month2)
+boolean dateRange(String month1, Int year1, String month2, Int year2)
+boolean dateRange(int day1, String month1, int day2, String month2, String GMT)
+boolean dateRange(String month1, Int year1, String month2, Int year2, String GMT)
+boolean dateRange(int day1, String month1, Int year1, int day2, String month2, Int year2)
+boolean dateRange(int day1, String month1, Int year1, int day2, String month2, Int year2, String GMT)
+boolean dnsDomainIs(String host, String domain)
+int     dnsDomainLevels(String host)
+String  dnsResolve(String host)
+boolean isInNet(String host, String pattern, String mask)
+boolean isPlainHostName(String host)
+boolean isResolvable(String host)
+boolean localHostOrDomainIs(String host, String hostdom)
+String  myIpAddress()
+boolean shExpMatch(String str, String pattern)
+boolean timeRange(int hour)
+boolean timeRange(int hour, String GMT)
+boolean timeRange(int hour1, int hour1)
+boolean timeRange(int hour1, int hour2, String GMT)
+boolean timeRange(int hour1, int min1, int hour2, int min2)
+boolean timeRange(int hour1, int min1, int hour2, int min2, String GMT)
+boolean timeRange(int hour1, int min1, sec1, int hour2, int min2, int sec2)
+boolean timeRange(int hour1, int min1, sec1, int hour2, int min2, int sec2, String GMT)
+boolean weekdayRange(String weekday)
+boolean weekdayRange(String weekday, String GMT)
+boolean weekdayRange(String weekday1, String weekday2)
+boolean weekdayRange(String weekday1, String weekday2, String GMT)

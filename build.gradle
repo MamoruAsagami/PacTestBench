@@ -1,0 +1,100 @@
+// How to run
+// (1) modify ext block below, if need be.
+// (2) "gradle run"
+
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin:'application'
+mainClassName = 'sophie.net.pac.PacTest'
+
+ext {
+  pac = "testbed/proxy.pac"    // pac file written in JaveScript
+  // pac = 'testbed/PacFunctionParade.pac'
+  urls = "testbed/urls.txt"    // URL list to be tested
+  
+  // trace = false
+  // date = "2016-9-30"  // yyyy-mm-dd
+  // time = "12:30:00"   // hh:mm[:ss]
+  // timezone = "JST"    // timezone
+  // myIpAddress = "125.152.2.128"
+  // hosts = ["hello.world.com", "128.56.22.55", "not.resolvable.com", "0.0.0.0"]
+  // encoding = "UTF-8"  // encoding of pac and urls files
+}
+repositories { jcenter() }
+dependencies {
+}
+test {
+   useTestNG()
+}
+jar {
+    from (configurations.compile.resolve().collect { it.isDirectory() ? it : fileTree(it) }) {
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        exclude '**/*.jar'
+    }
+    def manifestClasspath = configurations.compile.collect{ 'lib/' + it.getName() }.join(' ')
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+    }
+    copy {
+        from configurations.compile
+        into "build/libs/lib"
+    }
+}
+
+run {
+    doFirst {
+        main(project.mainClassName)
+        if(project.hasProperty('trace')) {
+            if(!trace) args += "trace=false"
+        }
+        if(project.hasProperty('date')) {
+            if(date) {
+                args += '-date'
+                args += date
+            }
+        }
+        if(project.hasProperty('time')) {
+            if(time) {
+                args += '-time'
+                args += time
+            }
+        }
+        if(project.hasProperty('timezone')) {
+            if(timezone) {
+                args += '-timezone'
+                args += timezone
+            }
+        }
+        if(project.hasProperty('myIpAddress')) {
+            if(myIpAddress) {
+                args += '-myIpAddress'
+                args += myIpAddress
+            }
+        }
+        if(project.hasProperty('hosts')) {
+            if(hosts) {
+                args += '-hosts'
+                args += '('
+                hosts.each {
+                	args += it
+                }
+                args += ')'
+            }
+        }
+        if(project.hasProperty('encoding')) {
+            if(encoding) {
+                args += '-encoding'
+                args += encoding
+            }
+        }
+        args += "${pac}"
+        args += "${urls}"
+        println args
+    }
+}
+
+

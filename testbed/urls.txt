@@ -1,0 +1,25 @@
+# file = (URL, expected? | options)*
+# URL: URL string to test
+# expected: test result of FindProxyForURL(url, host)
+# options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress address -hosts (name address ...)
+-hosts (google.xyz 0.0.0.0 google.com 1.2.3.4)
+-date 2018-9-15 # Saturday
+-myIpAddress 125.25.2.250 # Not in office
+http://google.com/
+
+-date 2018-9-17 # Monday	
+http://google.com/
+
+-myIpAddress 125.20.2.250 # In office
+http://google.com/
+http://home.edi.acme.com/webedi/
+http://download.ediext.acme.com/webedi/?order=x2018-01020
+https://google.com/
+
+-date 2018-9-24 -time 10:00 # On business trip
+http://google.com/
+#
+# test mode: In test mode you will specify the expected result in addition to url.
+#
+http://google.com/ "PROXY proxy.visiting.com:9090" # Will pass
+http://google.com/ DIRECT # Will fail
