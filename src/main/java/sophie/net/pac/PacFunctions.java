@@ -481,15 +481,6 @@ public class PacFunctions {
 		host = host.toLowerCase();
 		domain = domain.toLowerCase();
 		return host.endsWith(domain);
-		/*
-		if(host.equals(domain)) {
-			return true;
-		} else if(domain.startsWith(".") && host.endsWith(domain)) {
-			return true;
-		} else if(!domain.startsWith(".") && host.endsWith("." + domain)) {
-			return true;
-		}
-		*/
 	}
 
 	public static int dnsDomainLevels(String host) {
@@ -530,18 +521,17 @@ public class PacFunctions {
 				throw new IllegalArgumentException("pattern and mask network address conflict: " + pattern + " " + mask);
 			}
 			if(hostIna.getAddress().length != patternIna.getAddress().length) {
-				throw new IllegalArgumentException("host and pattern network address conflict: " + host + " " + pattern);
+				return false;
 			}
-			int i = 0;
-			for(i = 0; i < hostAddress.length; i++) {
-				int h = hostAddress[i] & 0xff;
+			for(int i = 0; i < hostAddress.length; i++) {
+				int h = hostAddress[i];
+				int p = patternAddress[i];
 				int m = maskAddress[i] & 0xff;
-				int p = patternAddress[i] & 0xff;
 				if((h & m) != (p & m)) {
-					break;
+					return false;
 				}
 			}
-			return i == hostAddress.length;
+			return true;
 		} catch(UnknownHostException e) {
 			return false;
 		}
@@ -554,7 +544,7 @@ public class PacFunctions {
 	public static boolean isResolvable(String host) {
 		if(hostMap != null && hostMap.containsKey(host)) {
 			String address = hostMap.get(host);
-			return (address.equals("null") || address.equals("0.0.0.0"))? false : true;
+			return !(address.equals("null") || address.equals("0.0.0.0"));
 		} else {
 			try {
 				InetAddress ina = InetAddress.getByName(host);
@@ -566,11 +556,11 @@ public class PacFunctions {
 	}
 	
 	public static boolean localHostOrDomainIs(String host, String hostdom) {
-		// Is true if the hostname matches exactly the specified hostname,
-		// or if there is no domain name part in the hostname, but the unqualified hostname matches.
-		String h = host.toLowerCase();
-		String hd = hostdom.toLowerCase();
-		return (h.indexOf('.') >= 0)? h.equals(hd): hd.startsWith(h + ".");
+		// Is true if the host matches exactly the specified hostdom,
+		// or if there is no domain name part in the host, but the unqualified hostdom matches.
+		host = host.toLowerCase();
+		hostdom = hostdom.toLowerCase();
+		return host.equals(hostdom) || (host.indexOf('.') < 0 && hostdom.startsWith(host + "."));
 	}
 	
 	

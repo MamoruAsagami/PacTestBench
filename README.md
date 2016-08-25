@@ -2,19 +2,16 @@
 Proxy.pac is indispensable for you if you have to move around multiple networks or you have to use multiple proxies in your network.
 However, it's not easy to debug or test Proxy.pac in standard environments.
 PacTestBench is out there for you to ease the debgging and testing of Proxy.pac.
-You can use PacTestBench as follows:
+  You can use PacTestBench as follows:
 ## 1 Preparation
 1. Place your proxy.pac in testbed directory
 2. Place your test data in  testbed directory as urls.txt
 The grammar of  urls.txt is as follows:
 
-file = (URL , expected? | options)*
-
-URL: URL to be tested.
-
-expected (oprional): expected result of  FindProxyForURL(url, host) function.
-
-options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress address -hosts (name address ...)
+  file = (URL , expected? | options)*
+  URL: URL to be tested.
+  expected (oprional): expected result of  FindProxyForURL(url, host) function.
+  options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress address -hosts (name address ...)
 
 ## 2 Running it by Gradle
 1. Arrange ext { ... } section of build.gradle
@@ -37,9 +34,9 @@ options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress addre
 |-tz timezone              |# the same as timezone|
 |-myIpAddress address      |# IP address of the host        |
 |-hosts (name address ...) |# predefined name resolution entries.  Use null or 0.0.0.0 as address for unresolvable names.|
-|-encoding charset         |# Encoding of pac-file and url-list-file|
+|-encoding charset         |# Encoding of pac-file and url-list-file, UTF-8, for example|
 
-## 4 Sample report
+## 4 Sample report (partial)
 
 ```java
 24: http://google.com/ "PROXY proxy.visiting.com:9090" # Will pass
