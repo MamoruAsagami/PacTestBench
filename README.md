@@ -9,8 +9,11 @@ PacTestBench is out there for you to ease the debgging and testing of Proxy.pac.
 The grammar of  urls.txt is as follows:
 
   file = (URL , expected? | options)*
+  
   URL: URL to be tested.
+  
   expected (oprional): expected result of  FindProxyForURL(url, host) function.
+  
   options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress address -hosts (name address ...)
 
 ## 2 Running it by Gradle
