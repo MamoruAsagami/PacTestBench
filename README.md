@@ -12,7 +12,7 @@ The grammar of  urls.txt is as follows:
   
   URL: URL to be tested.
   
-  expected (oprional): expected result of  FindProxyForURL(url, host) function.
+  expected (optional): expected result of  FindProxyForURL(url, host) function.
   
   options: -date yyyy-mm-dd -time hh:mm[:ss] -timezone timezone -myIpAddress address -hosts (name address ...)
 
