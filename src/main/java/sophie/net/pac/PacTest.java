@@ -5,6 +5,8 @@
 
 // VERSION: 1.1.0
 //      Rhino JavaScript engine support ('org.mozilla:rhino-engine:1.7.15')
+// VERSION: 1.1.1
+//       Adjusted the line number in .pac by 1.
 
 package sophie.net.pac;
 

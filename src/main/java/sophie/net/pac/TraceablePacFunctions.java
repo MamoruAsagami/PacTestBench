@@ -53,7 +53,7 @@ public class TraceablePacFunctions {
 	private static final Pattern Java8FramePat2 = Pattern.compile(".*:\\d+\\)"); // at FindProxyForURL (<eval>:12)
 	
 	public static void captureLine(String stack) {
-		int n = 0;
+		int n = 0 - 1; // -1 added for VERSION: 1.1.1
 		String[] frames = stack.split("\\r\\n|\\r|\\n");
 		boolean showStackFrame = false;
 		if(showStackFrame) { // Intentional dead code
@@ -83,7 +83,7 @@ public class TraceablePacFunctions {
 				// Wrong line format.  Let's just ignore it.
 			}
 		}
-		line = n;
+		line = n + 1; // +1 added for VERSION: 1.1.1
 	}
 	
 	public static void alert(String message) {
