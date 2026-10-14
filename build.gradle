@@ -6,13 +6,14 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin:'application'
-mainClassName = 'sophie.net.pac.PacTest'
+def mainClassName = 'sophie.net.pac.PacTest'
 
 ext {
   pac = "testbed/proxy.pac"    // pac file written in JaveScript
   // pac = 'testbed/PacFunctionParade.pac'
   urls = "testbed/urls.txt"    // URL list to be tested
   
+  // Uncomment below to specify options
   // trace = false
   // date = "2016-9-30"  // yyyy-mm-dd
   // time = "12:30:00"   // hh:mm[:ss]
@@ -21,61 +22,70 @@ ext {
   // hosts = ["hello.world.com", "128.56.22.55", "not.resolvable.com", "0.0.0.0"]
   // encoding = "UTF-8"  // encoding of pac and urls files
 }
-repositories { jcenter() }
+
+java {
+    //java.modularity.inferModulePath.set(false)
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories { mavenCentral() }
 dependencies {
+    implementation ('org.mozilla:rhino-engine:1.7.15')
 }
 test {
    useTestNG()
 }
 jar {
-    from (configurations.compile.resolve().collect { it.isDirectory() ? it : fileTree(it) }) {
+    from (configurations.runtimeClasspath.resolve().collect { it.isDirectory() ? it : zipTree(it) }) {
         exclude 'META-INF/MANIFEST.MF'
         exclude 'META-INF/*.SF'
         exclude 'META-INF/*.DSA'
         exclude 'META-INF/*.RSA'
-        exclude '**/*.jar'
     }
-    def manifestClasspath = configurations.compile.collect{ 'lib/' + it.getName() }.join(' ')
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
-        attributes 'Main-Class': project.mainClassName
+        attributes 'Main-Class': mainClassName
     }
-    copy {
-        from configurations.compile
-        into "build/libs/lib"
-    }
+}
+
+application {
+    mainClass = mainClassName
 }
 
 run {
     doFirst {
-        main(project.mainClassName)
-        if(project.hasProperty('trace')) {
-            if(!trace) args += "trace=false"
+        if(rootProject.hasProperty('trace')) {
+            if(!trace) args += "-trace=false"
         }
-        if(project.hasProperty('date')) {
+        if(rootProject.hasProperty('date')) {
             if(date) {
                 args += '-date'
                 args += date
             }
         }
-        if(project.hasProperty('time')) {
+        if(rootProject.hasProperty('time')) {
             if(time) {
                 args += '-time'
                 args += time
             }
         }
-        if(project.hasProperty('timezone')) {
+        if(rootProject.hasProperty('timezone')) {
             if(timezone) {
                 args += '-timezone'
                 args += timezone
             }
         }
-        if(project.hasProperty('myIpAddress')) {
+        if(rootProject.hasProperty('myIpAddress')) {
             if(myIpAddress) {
                 args += '-myIpAddress'
                 args += myIpAddress
             }
         }
-        if(project.hasProperty('hosts')) {
+        if(rootProject.hasProperty('hosts')) {
             if(hosts) {
                 args += '-hosts'
                 args += '('
@@ -85,7 +95,67 @@ run {
                 args += ')'
             }
         }
-        if(project.hasProperty('encoding')) {
+        if(rootProject.hasProperty('encoding')) {
+            if(encoding) {
+                args += '-encoding'
+                args += encoding
+            }
+        }
+        // Gradle run options 
+        // In Gradle run, property should be given in the form of -Pname=value.
+        // For example, 'trace' property is given as -Ptrace=false
+        // And, hosts array is given in string like -Phosts='hostname hostaddress hostname hostaddress' or 'hostname, hostaddress, hostname, hostaddress'.
+        def traceProp = providers.gradleProperty('trace')
+        if(traceProp.isPresent()) {
+            if(!traceProp.get().toBoolean()) args += '-trace=false'
+        }
+        def dateProp = providers.gradleProperty('date')
+        if(dateProp.isPresent()) {
+            def date = dateProp.get()
+            if(date) {
+                args += '-date'
+                args += date
+            }
+        }
+        def timeProp = providers.gradleProperty('time')
+        if(timeProp.isPresent()) {
+            def time = timeProp.get()
+            if(time) {
+                args += '-time'
+                args += time
+            }
+        }
+        def timezoneProp = providers.gradleProperty('timezone')
+        if(timezoneProp.isPresent()) {
+            def timezone = timezoneProp.get()
+            if(timezone) {
+                args += '-timezone'
+                args += timezone
+            }
+        }
+        def myIpAddressProp = providers.gradleProperty('myIpAddress')
+        if(myIpAddressProp.isPresent()) {
+            def myIpAddress = myIpAddressProp.get()
+            if(myIpAddress) {
+                args += '-myIpAddress'
+                args += myIpAddress
+            }
+        }
+        def hostsProp = providers.gradleProperty('hosts')
+        if(hostsProp.isPresent()) {
+            def hosts = hostsProp.get()
+            if(hosts) {
+                args += '-hosts'
+                args += '('
+                hosts.split(' +| *, *').each {
+                	args += it
+                }
+                args += ')'
+            }
+        }
+        def encodingProp = providers.gradleProperty('encoding')
+        if(encodingProp.isPresent()) {
+            def encoding = encodingProp.get()
             if(encoding) {
                 args += '-encoding'
                 args += encoding

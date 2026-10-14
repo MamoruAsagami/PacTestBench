@@ -3,6 +3,9 @@
  * 
 */
 
+// VERSION: 1.1.0
+//      Rhino JavaScript engine support ('org.mozilla:rhino-engine:1.7.15')
+
 package sophie.net.pac;
 
 import java.io.BufferedReader;
@@ -10,7 +13,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,9 +31,10 @@ import static sophie.net.pac.TraceablePacFunctions.quote;
 import static sophie.net.pac.TraceablePacFunctions.toStringFuncall;
 
 public class PacTest {
-	static Charset charset;
-	static boolean trace;
-	static boolean debug;
+	private static String VERSION = "1.1.0";
+	private static Charset charset;
+	private static boolean trace;
+	private static boolean debug;
 	
 
 	public static void setCharset(Charset charset) {
@@ -167,7 +172,8 @@ public class PacTest {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("JavaScript");
 		if(engine != null) {
-			engine.eval("var PacFunctions =  Packages.sophie.net.pac.TraceablePacFunctions;");
+			engine.eval("var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;");
+			// In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
 			loadPlatformScripts(engine);
 			runDebugScript(engine);
 		} else {
@@ -308,11 +314,12 @@ public class PacTest {
         }
 	}
 
-	static void runFindProxyForURLs(String pacFileName, String urlListFileName) throws ScriptException, IOException {
+	static void runFindProxyForURLs(String pacFileName, String urlListFileName) throws ScriptException, IOException, URISyntaxException {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("JavaScript");
 		if(engine != null) {
-			engine.eval(trace? "var PacFunctions =  Packages.sophie.net.pac.TraceablePacFunctions;" : "var PacFunctions =  Packages.sophie.net.pac.PacFunctions;");
+			engine.eval(trace? "var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;" : "var PacFunctions =  new Packages.sophie.net.pac.PacFunctions;");
+			// In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
 			loadPlatformScripts(engine);
 			loadPacScript(pacFileName, engine);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(urlListFileName), charset));
@@ -330,7 +337,7 @@ public class PacTest {
 							options(args);
 						} else {
 							String url = args[0];
-	    					String host = new URL(url).getHost();
+	    					String host = new URI(url).toURL().getHost();
 	    					Object result = engine.eval("FindProxyForURL('" + url + "', '" + host + "')");
 	    					System.out.println(toStringFuncall("FindProxyForURL", url, host) + ": " + quote((result != null)? result.toString(): null));
 	    					if(args.length >= 2) {
@@ -361,6 +368,7 @@ public class PacTest {
 	}
 	
 	static void usage() {
+		System.err.println("PacTest VERSION: " + VERSION);
 		System.err.println("Usage: PacTest [options] pac-file url-list-file");
 		System.err.println("Options");
 		System.err.println("    -trace=false|true         # trace message option");
