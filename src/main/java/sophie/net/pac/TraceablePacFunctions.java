@@ -8,9 +8,16 @@ package sophie.net.pac;
 import java.util.regex.Pattern;
 
 public class TraceablePacFunctions {
+    static int LineNumberShift = 0;  // nashorn: 0, rhino: 1, graal: 0
 	static final Pattern numberPattern = Pattern.compile("[+-]?\\d+");
 	static int line;
 	
+	static {
+	    switch(PacTest.EngineKind) {
+	    case Rhino: LineNumberShift = 1; break;
+	    default: LineNumberShift = 0; break;
+	    }
+	}
 	public static String quote(String s) {
 		if(s == null) {
 			return "null";
@@ -53,7 +60,7 @@ public class TraceablePacFunctions {
 	private static final Pattern Java8FramePat2 = Pattern.compile(".*:\\d+\\)"); // at FindProxyForURL (<eval>:12)
 	
 	public static void captureLine(String stack) {
-		int n = 0 - 1; // -1 added for VERSION: 1.1.1
+		int n = 0 - LineNumberShift; // -LineNumberShift added for VERSION: 1.1.1
 		String[] frames = stack.split("\\r\\n|\\r|\\n");
 		boolean showStackFrame = false;
 		if(showStackFrame) { // Intentional dead code
@@ -83,7 +90,7 @@ public class TraceablePacFunctions {
 				// Wrong line format.  Let's just ignore it.
 			}
 		}
-		line = n + 1; // +1 added for VERSION: 1.1.1
+		line = n + LineNumberShift; // +LineNumberShift added for VERSION: 1.1.1
 	}
 	
 	public static void alert(String message) {

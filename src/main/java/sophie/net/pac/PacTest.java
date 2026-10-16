@@ -7,6 +7,28 @@
 //      Rhino JavaScript engine support ('org.mozilla:rhino-engine:1.7.15')
 // VERSION: 1.1.1
 //       Adjusted the line number in .pac by 1.
+// VERSION: 1.1.2
+//       Supported Nashorn JavaScript engine
+/*
+
+build.gradle:
+
+dependencies {
+  switch(JavaScriptEngine) {
+  case Rhino:
+    implementation ('org.mozilla:rhino-engine:1.7.15')
+    break;
+  case Nashorn:
+    implementation("org.openjdk.nashorn:nashorn-core:15.7")
+    break;
+  case Graal:
+    implementation("org.graalvm.js:js:23.0.13.1.1")
+    implementation("org.graalvm.js:js-scriptengine:23.0.13.1.1")
+    break;
+  }
+}
+
+*/
 
 package sophie.net.pac;
 
@@ -33,11 +55,29 @@ import static sophie.net.pac.TraceablePacFunctions.quote;
 import static sophie.net.pac.TraceablePacFunctions.toStringFuncall;
 
 public class PacTest {
-	private static String VERSION = "1.1.0";
+	private static String VERSION = "1.1.2";
+	static ScriptEngineKind EngineKind;
 	private static Charset charset;
 	private static boolean trace;
 	private static boolean debug;
 	
+	static {
+	    try {
+	        String engine = ((Object) (new ScriptEngineManager()).getEngineByName("JavaScript")).toString();
+    	   if(engine.contains("NashornScriptEngine")) {
+    	       EngineKind = ScriptEngineKind.Nashorn;
+    	   } else if(engine.contains("RhinoScriptEngine")) {
+    	       EngineKind = ScriptEngineKind.Rhino;
+    	   } else if(engine.contains("GraalJSScriptEngine")) {
+    	       EngineKind = ScriptEngineKind.Graal;
+    	   } else {
+    	       EngineKind = ScriptEngineKind.Unknown;
+    	   }
+    	} catch(Exception e) {
+    	    EngineKind = ScriptEngineKind.Unknown;
+    	}
+	}
+	enum ScriptEngineKind {Unknown, Nashorn, Rhino, Graal};
 
 	public static void setCharset(Charset charset) {
 		PacTest.charset = charset;
@@ -174,8 +214,20 @@ public class PacTest {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("JavaScript");
 		if(engine != null) {
-			engine.eval("var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;");
-			// In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
+		    switch(EngineKind) {
+		    case Rhino:
+		        engine.eval("var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;");
+		        // In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
+		        break;
+		    case Graal:
+		        javax.script.Bindings bindings = engine.getBindings(javax.script.ScriptContext.ENGINE_SCOPE);
+		        bindings.put("polyglot.js.allowHostAccess", true);
+		        bindings.put("polyglot.js.allowHostClassLookup", true);
+		        // Follow through down
+		    case Nashorn:
+			    //engine.eval("var pacFunctions = new (Java.type('sophie.net.pac.TraceablePacFunctions'))()"); // To call instance method
+			    engine.eval("var PacFunctions = Java.type('sophie.net.pac.TraceablePacFunctions')");           // To call static method
+		    }
 			loadPlatformScripts(engine);
 			runDebugScript(engine);
 		} else {
@@ -320,8 +372,20 @@ public class PacTest {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("JavaScript");
 		if(engine != null) {
-			engine.eval(trace? "var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;" : "var PacFunctions =  new Packages.sophie.net.pac.PacFunctions;");
-			// In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
+		    switch(EngineKind) {
+		    case Rhino:
+		        engine.eval(trace? "var PacFunctions =  new Packages.sophie.net.pac.TraceablePacFunctions;" : "var PacFunctions =  new Packages.sophie.net.pac.PacFunctions;");
+		        // In the above line, 'new' became required for rhino.  It wasn't required for Nashorn of Java 8.
+		        break;
+		    case Graal:
+		        javax.script.Bindings bindings = engine.getBindings(javax.script.ScriptContext.ENGINE_SCOPE);
+		        bindings.put("polyglot.js.allowHostAccess", true);
+		        bindings.put("polyglot.js.allowHostClassLookup", true);
+		        // Follow through down
+		    case Nashorn:
+			    //engine.eval(trace? "var pacFunctions = new (Java.type('sophie.net.pac.TraceablePacFunctions'))()" : "var pacFunctions = new (Java.type('sophie.net.pac.PacFunctions'))()"); // To call instance method
+			    engine.eval(trace? "var PacFunctions = Java.type('sophie.net.pac.TraceablePacFunctions')" : "var PacFunctions = Java.type('sophie.net.pac.PacFunctions')");                   // To call static method
+		    }
 			loadPlatformScripts(engine);
 			loadPacScript(pacFileName, engine);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(urlListFileName), charset));
@@ -369,6 +433,15 @@ public class PacTest {
 		}
 	}
 	
+	static void graalNotSupported() {
+	    System.out.println();
+	    System.out.println("Graal JavaScript Engine is not supported in this version.");
+	    System.out.println("To support Graal, class TraceablePacFunctions and PacFunctions should be rewriten thoroughly.");
+	    System.out.println("For example, boolean dateRange(String arg1) should be changed to boolean dateRange(Object arg1) so as");
+	    System.out.println("to match both dateRange('Jun') and dateRange(15).");
+	    System.out.println();
+	}
+
 	static void usage() {
 		System.err.println("PacTest VERSION: " + VERSION);
 		System.err.println("Usage: PacTest [options] pac-file url-list-file");
@@ -386,6 +459,9 @@ public class PacTest {
 	
     public static void main(String[] args) throws Exception {
     	try {
+    	    if(EngineKind == ScriptEngineKind.Graal) {
+    	        graalNotSupported();
+    	    }
 	    	boolean showUsage = false;
 	    	Charset charset = Charset.defaultCharset();
 	    	String date = null;

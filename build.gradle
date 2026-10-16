@@ -7,7 +7,7 @@ apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin:'application'
 def mainClassName = 'sophie.net.pac.PacTest'
-
+def JavaScriptEngine = 'Nashorn'  // One of Nashorn or Rhino is available
 ext {
   pac = "testbed/proxy.pac"    // pac file written in JaveScript
   // pac = 'testbed/PacFunctionParade.pac'
@@ -32,15 +32,33 @@ java {
     }
 }
 
-repositories { mavenCentral() }
-dependencies {
-    implementation ('org.mozilla:rhino-engine:1.7.15')
+repositories {
+    mavenCentral()
+    maven {url = uri("https://maven.mangoautomation.net/repository/ias-release/")}
+
+
 }
+
+dependencies {
+    switch (JavaScriptEngine) {
+    case 'Rhino':
+        implementation ('org.mozilla:rhino-engine:1.7.15')
+        break
+    case 'Nashorn':
+        implementation("org.openjdk.nashorn:nashorn-core:15.7")
+        break
+    case 'Graal':
+        implementation('org.graalvm.js:js:23.0.13.1.1')
+        implementation('org.graalvm.js:js-scriptengine:23.0.13.1.1')
+        break
+    }
+}
+
 test {
    useTestNG()
 }
 jar {
-    from (configurations.runtimeClasspath.resolve().collect { it.isDirectory() ? it : zipTree(it) }) {
+    from (configurations.runtimeClasspath.resolve().collect {it.isDirectory() ? it : zipTree(it) }) {
         exclude 'META-INF/MANIFEST.MF'
         exclude 'META-INF/*.SF'
         exclude 'META-INF/*.DSA'
